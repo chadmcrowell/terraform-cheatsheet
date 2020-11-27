@@ -1,6 +1,6 @@
 # terraform-cheatsheet
 
-[command docs](https://www.tf.io/docs/commands/)
+[command docs](https://www.terraform.io/docs/commands/)
 
 ## Alias
 ```bash
