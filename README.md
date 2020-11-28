@@ -9,44 +9,37 @@ alias tf=terraform
 
 ## Terraform Plan
 ```bash
-# pre-deployment plan
-tf plan
+tf plan     # pre-deployment plan
 
-# save the plan to a file
-tf plan -out=newplan
+tf plan -out=newplan    # save the plan to a file
 ```
 
 ## Terraform Apply
 ```bash
-# prompt before creating resources described in tf
-tf apply
+tf apply    # prompt before creating resources described in tf
 
-# create resources without prompt
-tf apply --auto-approve
+tf apply --auto-approve     # create resources without prompt
 
-# apply plan from plan file
-tf apply "newplan"
+tf apply "newplan"      # apply plan from plan file
 ```
 
 ## Terraform State
 ```bash
-# inspect the current state
-tf show
+tf show     # inspect the current state
 
-# list the resources in the state file
-tf state list
+tf state list   # list the resources in the state file
+
+tf refresh      # refresh the current state
 ```
 
 ## Terraform Graph
 ```bash
-# visual dependency graph
-tf graph
+tf graph    # visual dependency graph
 ```
 
 ## Terraform Import
 ```bash
-# import the azure storage account specified in tf
-tf import azurerm_storage.account.storage_account
+tf import azurerm_storage.account.storage_account       # import the azure storage account specified in tf
 ```
 
 ## HEREDOC
@@ -86,21 +79,16 @@ allocation_method = var.environment == "prod" ? "static" : "Dynamic"
 
 ## Terraform Destroy
 ```bash
-# destroy all
-tf destroy 
+tf destroy      # destroy all
 
-# only destroy specific resource
-tf destroy -target aws_instace.my_instance
+tf destroy -target aws_instace.my_instance      # only destroy specific resource
 ```
 
 ## Logging
 ```bash
-# enable trace logging
-export TF_LOG=TRACE
+export TF_LOG=TRACE     # enable trace logging
 
-# set log path to output to a file
-export TF_LOG_PATH="terraform.txt"
-
+export TF_LOG_PATH="terraform.txt"      # set log path to output to a file
 ```
 
 ## Comments
