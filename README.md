@@ -2,12 +2,12 @@
 
 [command docs](https://www.terraform.io/docs/commands/)
 
-| Version Number Arguments | Description |  
-| :--- | :--- | :--- | :--- |
-| >=1.0 | Greater than or equal to version 1.0 |  
-| <=1.0 | Less than or equal to version 1.0 |  
-| ~>2.0 | Any version in the 2.0 range |  
-| >=2.10\,<=2.30 | Any version between 2.10 and 2.30 |  
+Version Number Arguments | Description  
+------- | ----------------  
+>=1.0 | Greater than or equal to version 1.0  
+<=1.0 | Less than or equal to version 1.0  
+~>2.0 | Any version in the 2.0 range  
+>=2.10,<=2.30 | Any version between 2.10 and 2.30  
 
 ## Alias
 ```bash
