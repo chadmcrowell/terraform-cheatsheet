@@ -4,10 +4,10 @@
 
 Version Number Arguments | Description  
 ------- | ----------------  
-\>=1.0 | Greater than or equal to version 1.0  
-<=1.0 | Less than or equal to version 1.0  
-~>2.0 | Any version in the 2.0 range  
-\>=2.10,<=2.30 | Any version between 2.10 and 2.30  
+\>=2.0 | Greater than or equal to version 2.0  
+<=3.0 | Less than or equal to version 3.0  
+~>3.0 | Any version in the 3.0 range  
+\>=3.10,<=3.18 | Any version between 3.10 and 3.18  
 
 ## Alias
 ```bash
