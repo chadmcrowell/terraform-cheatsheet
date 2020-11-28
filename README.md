@@ -114,3 +114,9 @@ resource "digitalocean_droplet" "my_droplet" {
 }
 */
 ```
+
+## 3rd Party Providers
+Operating System | User plugins directory  
+------- | ----------------  
+Windows | %APPDATA%\terraform.d\plugins  
+All other OS | ~/.terraform.d/plugins  
