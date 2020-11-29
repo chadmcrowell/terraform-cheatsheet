@@ -14,6 +14,11 @@ Version Number Arguments | Description
 alias tf=terraform
 ```
 
+## Terraform Console
+```bash
+tf console      # access interactive command-line console to experiment with expressions
+```
+
 ## Terraform Upgrade
 ```bash
 tf 0.13upgrade .        # upgrade to major release v0.13
@@ -134,13 +139,139 @@ resource "digitalocean_droplet" "my_droplet" {
 ## Data Types
 ```hcl
 # variables.tf
-variable {
+variable "data-type-example" {
     type = string
-    type = list     # e.g. ["us-east-1", "us-west-2"]
+    type = list     # e.g. ["us-east-1a", "us-west-2b"]
     type = map      # e.g. {name = "Chad", age = 34}
     type = number
 }
+```
 
+## Fetch Data from Map
+```hcl
+# main.tf
+resource "aws_instance" "myec2" {
+    ami = "ami082c5a44755e0e6f"
+    instance_type = var.types["us-west-2"]
+}
+
+variable "types" {
+    type = map
+    default = {
+        us-east-1 = "t2.micro"
+        us-west-2 = "t2.nano"
+        ap-south-1 = "t2.small"
+    }
+}
+```
+
+## Fetch Data from List
+```hcl
+# main.tf
+resource "aws_instance" "myec2" {
+    ami = "ami082c5a44755e0e6f"
+    instance_type = var.types[0]
+}
+
+variable "types" {
+    type = list
+    default = ["m5.large","m5.xlarge","t2.medium"]
+}
+```
+
+## Count and Count Index
+```hcl
+# main.tf
+
+# create 5 ec2 instances
+resource "aws_instance" "instance_one" {
+    ami = "ami082c5a44755e0e6f"
+    instance_type = "t2.micro"
+    count = 5
+}
+```
+```hcl
+# main.tf
+
+# create 5 users, appending the count index (0-4) for each
+resource "aws_iam_user" "iam_user" {
+    name = "ec2user.${count.index}"
+    count = 5
+    path = "/system/"
+}
+```
+```hcl
+# main.tf
+
+# iterate through the index of variable names
+variable "ec2_names" {
+    type = list
+    default = ["dev-ec2user", "stage-ec2user", "prod-ec2user"]
+}
+
+resource "aws_iam_user" "iam_user" {
+    name = var.ec2_names[count.index]
+    count = 3
+    path = "/system/"
+}
+```
+```hcl
+# main.tf
+
+# create a dev ec2 instance or prod ec2 instance
+variable "dev_env" {}
+
+resource "aws_instance" "instance_one" {
+    ami = "ami082c5a44755e0e6f"
+    instance_type = "t2.micro"
+    count = var.dev_env == true ? 1 : 0
+}
+
+resource "aws_instance" "instance_one" {
+    ami = "ami082c5a44755e0e6f"
+    instance_type = "t2.large"
+    count = var.dev_env == false ? 1: 0
+}
+```
+
+## Locals 
+```hcl
+# main.tf
+
+locals {
+  common_tags = {
+    Owner = "DevOps Team"
+    service = "backend"
+  }
+}
+resource "aws_instance" "app-dev" {
+   ami = "ami-082b5a644766e0e6f"
+   instance_type = "t2.micro"
+   tags = local.common_tags
+}
+
+resource "aws_ebs_volume" "db_ebs" {
+  availability_zone = "us-west-2a"
+  size              = 8
+  tags = local.common_tags
+}
+```
+```hcl
+# main.tf
+
+variable "name" {}
+
+variable "default" {}
+
+locals {
+    name_prefix = "${var.name != "" ? var.name : var.default}"
+}
+
+resource "aws_instance" "app-dev" {
+   ami = "ami-082b5a644766e0e6f"
+   instance_type = "t2.micro"
+   name = local.name_prefix
+}
 ```
 
 ## 3rd Party Providers
