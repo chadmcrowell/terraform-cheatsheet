@@ -14,9 +14,21 @@ Version Number Arguments | Description
 alias tf=terraform
 ```
 
+## Terraform Upgrade
+```bash
+tf 0.13upgrade .        # upgrade to major release v0.13
+```
+
 ## Terraform Init
 ```bash
 terraform init      # initialize terraform config files
+```
+
+## Envrionment Variable
+```bash
+setx TF_VAR_instancetype m5.large       # set a variable via environment variable (Windows)
+
+export TF_VAR_instancetype="t2.nano"        # set a variable via environment variable (Linux)
 ```
 
 ## Terraform Plan
@@ -24,6 +36,10 @@ terraform init      # initialize terraform config files
 tf plan     # pre-deployment plan
 
 tf plan -out=newplan    # save the plan to a file
+
+tf plan -var="instancetype=t2.small"        # explicitly define variable value
+
+tf plan -var-file="custom.tfvars"       # use custom tfvars file name
 ```
 
 ## Terraform Apply
@@ -113,6 +129,18 @@ resource "digitalocean_droplet" "my_droplet" {
     size = "s-1vcpu-1gb"
 }
 */
+```
+
+## Data Types
+```hcl
+# variables.tf
+variable {
+    type = string
+    type = list     # e.g. ["us-east-1", "us-west-2"]
+    type = map      # e.g. {name = "Chad", age = 34}
+    type = number
+}
+
 ```
 
 ## 3rd Party Providers
