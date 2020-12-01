@@ -3,6 +3,7 @@
 [command docs](https://www.terraform.io/docs/commands/)
 [functions](https://www.terraform.io/docs/configuration/functions/)
 [provisioners](https://www.terraform.io/docs/provisioners/index.html)
+[modules](https://registry.terraform.io/browse/modules)
 
 Version Number Arguments | Description  
 ------- | ----------------  
@@ -19,6 +20,19 @@ alias tf=terraform
 ## Terraform Console
 ```bash
 tf console      # access interactive command-line console to experiment with expressions
+```
+
+## Terraform Workspace
+```bash
+tf workspace show       # show current workspace
+
+tf workspace list       # list all available workspaces
+
+tf workspace new dev        # create and switch to new workspace named dev
+
+tf workspace new prod       # create a new workspace named prod
+
+tf workspace select dev     # switch to the dev workspace
 ```
 
 ## Terraform Validate
@@ -549,6 +563,102 @@ resource "aws_instance" "myec2" {
      private_key = file("./ec2-key.pem")
      host = self.public_ip
    }
+}
+```
+
+## Terraform Modules
+```hcl
+# myec2.tf
+module "ec2module" {
+    source = "./modules/ec2"
+}
+
+# ./modules/ec2/ec2.tf
+resource "aws_instance" "myec2" {
+    ami = "ami-0b1e534a4ff9019e0"
+    instance_type = "t2.micro"
+}
+```
+```hcl
+# myec2.tf
+module "ec2module" {
+    source = "./modules/ec2"
+    instance_type = "m4.large"
+}
+
+# ./modules/ec2/variables.tf
+variable "instance_type" {
+    default = "t2.micro"
+}
+
+# ./modules/ec2/ec2.tf
+resource "aws_instance" "myec2" {
+    ami = "ami-0b1e534a4ff9019e0"
+    instance_type = var.instance_type
+}
+```
+
+## Registry Module
+```hcl
+module "ec2_cluster" {
+  source                 = "terraform-aws-modules/ec2-instance/aws"
+  version                = "~> 2.0"
+
+  name                   = "my-cluster"
+  instance_count         = 1
+
+  ami                    = "ami-0d6621c01e8c2de2c"
+  instance_type          = "t2.micro"
+  subnet_id              = "subnet-4dbfb206"
+
+  tags = {
+    Terraform   = "true"
+    Environment = "dev"
+  }
+}
+```
+
+## Terraform Workspace
+```hcl
+resource "aws_instance" "myec2" {
+   ami = "ami-082b5a644766e0e6f"
+   instance_type = lookup(var.instance_type,terraform.workspace)
+}
+
+variable "instance_type" {
+  type = "map"
+
+  default = {
+    default = "t2.nano"
+    dev     = "t2.micro"
+    prd     = "t2.large"
+  }
+}
+```
+
+## Module Sources
+```hcl
+# main.tf
+
+# module source is a generic git repo
+module "my_module" {
+    source = "git::https://github.com/chadmcrowell/tmp-repo.git"
+}
+```
+```hcl
+# main.tf
+
+# module source is a github repo
+module "my_module" {
+    source = "github.com/chadmcrowell/tmp-repo"
+}
+```
+```hcl
+# main.tf
+
+# module source is a specific branch of a generaic github repo
+module "my_module" {
+    source = "git::https://github.com/chadmcrowell/tmp-repo.git?ref=develop"
 }
 ```
 
