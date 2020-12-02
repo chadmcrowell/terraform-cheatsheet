@@ -23,6 +23,7 @@ tf console      # access interactive command-line console to experiment with exp
 ```
 
 ## Terraform Workspace
+* use different state files
 ```bash
 tf workspace show       # show current workspace
 
@@ -33,6 +34,24 @@ tf workspace new dev        # create and switch to new workspace named dev
 tf workspace new prod       # create a new workspace named prod
 
 tf workspace select dev     # switch to the dev workspace
+```
+
+### Workspace - Example
+```hcl
+resource "aws_instance" "myec2" {
+   ami = "ami-082b5a644766e0e6f"
+   instance_type = lookup(var.instance_type,terraform.workspace)
+}
+
+variable "instance_type" {
+  type = "map"
+
+  default = {
+    default = "t2.nano"
+    dev     = "t2.micro"
+    prd     = "t2.large"
+  }
+}
 ```
 
 ## Terraform Validate
@@ -86,6 +105,13 @@ tf apply --auto-approve     # create resources without prompt
 tf apply "newplan"      # apply plan from plan file
 ```
 
+## Terraform Destroy
+```bash
+tf destroy      # destroy all
+
+tf destroy -target aws_instace.my_instance      # only destroy specific resource
+```
+
 ## Terraform Taint
 ```bash
 tf taint aws_instance.myec2     # destroy and recreate the resource aws_instance.myec2
@@ -93,11 +119,19 @@ tf taint aws_instance.myec2     # destroy and recreate the resource aws_instance
 
 ## Terraform State
 ```bash
-tf show     # inspect the current state
+tf state show aws_eip.myeip    # inspect the state of an elastic ip resource
 
 tf state list   # list the resources in the state file
 
-tf refresh      # refresh the current state
+tf state refresh      # refresh the current state
+
+tf state mv aws_instance.my_webapp aws_instance.my_ec2      # move ec2 instance within state without destroying and recreating
+
+tf state pull     # manually download and output the remote state
+
+tf state push     # manually upload a local state file to remote loc
+
+tf state rm aws_instance.my_ec2      # removes ec2 instance from state (tf no longer aware)
 ```
 
 ## Terraform Graph
@@ -108,6 +142,8 @@ tf graph    # visual dependency graph
 ## Terraform Import
 ```bash
 tf import azurerm_storage.account.storage_account       # import the azure storage account specified in tf
+
+tf import aws_instance.myec2 i-041886ebb7e97bd20        # import ec2 instance with instance ID
 ```
 
 ## Terraform Output
@@ -135,7 +171,7 @@ extension {
   }
 ```
 
-## Count
+## Count and Count Index
 ```hcl
 /* 
 if the environment variable is equal to "prod"
@@ -149,12 +185,107 @@ then set allocation method to "static", else set to "Dynamic"
 */
 allocation_method = var.environment == "prod" ? "static" : "Dynamic"
 ```
+```hcl
+# main.tf
 
-## Terraform Destroy
-```bash
-tf destroy      # destroy all
+# create 5 ec2 instances
+resource "aws_instance" "instance_one" {
+    ami = "ami082c5a44755e0e6f"
+    instance_type = "t2.micro"
+    count = 5
+}
+```
+```hcl
+# main.tf
 
-tf destroy -target aws_instace.my_instance      # only destroy specific resource
+# create 5 users, appending the count index (0-4) for each
+resource "aws_iam_user" "iam_user" {
+    name = "ec2user.${count.index}"
+    count = 5
+    path = "/system/"
+}
+```
+```hcl
+# main.tf
+
+# iterate through the index of variable names
+variable "ec2_names" {
+    type = list
+    default = ["dev-ec2user", "stage-ec2user", "prod-ec2user"]
+}
+
+resource "aws_iam_user" "iam_user" {
+    name = var.ec2_names[count.index]
+    count = 3
+    path = "/system/"
+}
+```
+```hcl
+# main.tf
+
+# create a dev ec2 instance or prod ec2 instance
+variable "dev_env" {}
+
+resource "aws_instance" "instance_one" {
+    ami = "ami082c5a44755e0e6f"
+    instance_type = "t2.micro"
+    count = var.dev_env == true ? 1 : 0
+}
+
+resource "aws_instance" "instance_one" {
+    ami = "ami082c5a44755e0e6f"
+    instance_type = "t2.large"
+    count = var.dev_env == false ? 1: 0
+}
+```
+
+## Multiple Resources with Multiple Regions/Accounts
+```hcl
+# main.tf
+
+# use alias for multiple providers blocks
+provider "aws" {
+  region     = "us-east-1"
+  version    = ">=2.8"
+}
+
+provider "aws" {
+  alias      =  "mumbai"
+  region     =  "ap-south-1"
+}
+
+resource "aws_eip" "myeip" {
+  vpc = "true"
+}
+
+resource "aws_eip" "myeip01" {
+  vpc = "true"
+  provider = aws.mumbai
+}
+```
+```hcl
+# main.tf
+
+# use different creds from ~/.aws/credentials
+provider "aws" {
+  region     = "us-east-1"
+  version    = ">=2.8"
+}
+
+provider "aws" {
+  alias      = "tfadmin2cred"
+  region     = "ap-south-1"
+  profile    = "tfadmin2"
+}
+
+resource "aws_eip" "myeip" {
+  vpc = "true"
+}
+
+resource "aws_eip" "myeip01" {
+  vpc = "true"
+  provider = aws.tfadmin2cred
+}
 ```
 
 ## Logging
@@ -241,61 +372,6 @@ resource "aws_instance" "myec2" {
 variable "types" {
     type = list
     default = ["m5.large","m5.xlarge","t2.medium"]
-}
-```
-
-## Count and Count Index
-```hcl
-# main.tf
-
-# create 5 ec2 instances
-resource "aws_instance" "instance_one" {
-    ami = "ami082c5a44755e0e6f"
-    instance_type = "t2.micro"
-    count = 5
-}
-```
-```hcl
-# main.tf
-
-# create 5 users, appending the count index (0-4) for each
-resource "aws_iam_user" "iam_user" {
-    name = "ec2user.${count.index}"
-    count = 5
-    path = "/system/"
-}
-```
-```hcl
-# main.tf
-
-# iterate through the index of variable names
-variable "ec2_names" {
-    type = list
-    default = ["dev-ec2user", "stage-ec2user", "prod-ec2user"]
-}
-
-resource "aws_iam_user" "iam_user" {
-    name = var.ec2_names[count.index]
-    count = 3
-    path = "/system/"
-}
-```
-```hcl
-# main.tf
-
-# create a dev ec2 instance or prod ec2 instance
-variable "dev_env" {}
-
-resource "aws_instance" "instance_one" {
-    ami = "ami082c5a44755e0e6f"
-    instance_type = "t2.micro"
-    count = var.dev_env == true ? 1 : 0
-}
-
-resource "aws_instance" "instance_one" {
-    ami = "ami082c5a44755e0e6f"
-    instance_type = "t2.large"
-    count = var.dev_env == false ? 1: 0
 }
 ```
 
@@ -598,44 +674,6 @@ resource "aws_instance" "myec2" {
 }
 ```
 
-## Registry Module
-```hcl
-module "ec2_cluster" {
-  source                 = "terraform-aws-modules/ec2-instance/aws"
-  version                = "~> 2.0"
-
-  name                   = "my-cluster"
-  instance_count         = 1
-
-  ami                    = "ami-0d6621c01e8c2de2c"
-  instance_type          = "t2.micro"
-  subnet_id              = "subnet-4dbfb206"
-
-  tags = {
-    Terraform   = "true"
-    Environment = "dev"
-  }
-}
-```
-
-## Terraform Workspace
-```hcl
-resource "aws_instance" "myec2" {
-   ami = "ami-082b5a644766e0e6f"
-   instance_type = lookup(var.instance_type,terraform.workspace)
-}
-
-variable "instance_type" {
-  type = "map"
-
-  default = {
-    default = "t2.nano"
-    dev     = "t2.micro"
-    prd     = "t2.large"
-  }
-}
-```
-
 ## Module Sources
 ```hcl
 # main.tf
@@ -662,8 +700,95 @@ module "my_module" {
 }
 ```
 
+## Registry Module
+```hcl
+module "ec2_cluster" {
+  source                 = "terraform-aws-modules/ec2-instance/aws"
+  version                = "~> 2.0"
+
+  name                   = "my-cluster"
+  instance_count         = 1
+
+  ami                    = "ami-0d6621c01e8c2de2c"
+  instance_type          = "t2.micro"
+  subnet_id              = "subnet-4dbfb206"
+
+  tags = {
+    Terraform   = "true"
+    Environment = "dev"
+  }
+}
+```
+
+## Terraform State - AWS Backend
+```hcl
+# backend.tf
+
+# store the terraform.tfstate file in an s3 bucket
+terraform {
+    backend "s3" {
+        bucket = "my-remote-state-s3-bucket"
+        key    = "terraform.tfstate"
+        region = "us-east-1"
+        access_key = "MY_ACCESS_KEY"
+        secret_key = "MY_SECRET_KEY"
+    }
+}
+```
+```hcl
+# backend.tf
+
+# store the terraform.tfstate file in an s3 bucket with STATE LOCK enabled
+terraform {
+    backend "s3" {
+        bucket         = "my-remote-state-s3-bucket"
+        key            = "terraform.tfstate"
+        region         = "us-east-1"
+        access_key     = "MY_ACCESS_KEY"
+        secret_key     = "MY_SECRET_KEY"
+        dynamodb_table = "s3-state-lock"
+    }
+}
+```
+
+[backend types](https://www.terraform.io/docs/backends/types/)
+
+## Assume Role in AWS
+```hcl
+provider "aws" {
+    region = "us-west-1"
+    assume_role {
+        role_arn = "arn:aws:iam::871285060102:role/test-sts"
+        session_name = "sts-demo"
+    }
+}
+```
+
+## Sensitive Parameter
+```hcl
+locals {
+    db_password = {
+        admin = "password"
+    }
+}
+
+output "db_password" {
+    value     = local.db_password
+    sensitive = true
+}
+```
+
+
 ## 3rd Party Providers
 Operating System | User plugins directory  
 ------- | ----------------  
 Windows | %APPDATA%\terraform.d\plugins  
 All other OS | ~/.terraform.d/plugins  
+
+## .gitignore
+Files to Ignore | Description
+------- | ----------------  
+`.terraform` | This file created when `tf init` is run  
+`terraform.tfvars` | contains all of your secrets
+`terraform.tfstate` | should be stored remotely
+`crash.log` | logs are stored here if tf crashes
