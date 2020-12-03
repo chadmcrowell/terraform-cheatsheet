@@ -23,7 +23,7 @@ tf console      # access interactive command-line console to experiment with exp
 ```
 
 ## Terraform Workspace
-* use different state files
+* use different state files for each workspace
 ```bash
 tf workspace show       # show current workspace
 
@@ -71,7 +71,9 @@ tf 0.13upgrade .        # upgrade to major release v0.13
 
 ## Terraform Init
 ```bash
-terraform init      # initialize terraform config files
+tf init      # initialize terraform config files
+
+tf init -upgrade        # upgrade to the latest provider 
 ```
 
 ## Envrionment Variable
@@ -776,6 +778,45 @@ output "db_password" {
     value     = local.db_password
     sensitive = true
 }
+```
+
+## Sentinel Policy
+[sentinel - docs](https://docs.hashicorp.com/sentinel/terraform/)
+```hcl
+# policy in terraform cloud
+
+import "tfplan"
+ 
+main = rule {
+  all tfplan.resources.aws_instance as _, instances {
+    all instances as _, r {
+      (length(r.applied.tags) else 0) > 0
+    }
+  }
+}
+```
+
+## Remote Backend
+* Apply not allowed for workspaces with a VCS connection
+```hcl
+# main.tf
+terraform {
+    required_version = "~> 0.12.0"
+
+    backend "remote" {}
+}
+
+resource "aws_iam_user" "ec2user" {
+    name = "ec2user"
+    path = "/system"
+}
+```
+```hcl
+# backend.hcl
+
+workspaces { name = "my-repository-name" }
+hostname     = "app.terraform.io"
+organization = "my-organization-name"
 ```
 
 
