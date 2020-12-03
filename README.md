@@ -96,6 +96,8 @@ tf plan -var-file="custom.tfvars"       # use custom tfvars file name
 tf plan -target aws_security_group.sg_allow_ssh     # detect changes in a specific resource
 
 tf plan -refresh=false      # skip the refresh of all resources in the configuration
+
+tf plan -destroy        # plan a destroy without committing
 ```
 
 ## Terraform Apply
