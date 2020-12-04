@@ -83,6 +83,11 @@ setx TF_VAR_instancetype m5.large       # set a variable via environment variabl
 export TF_VAR_instancetype="t2.nano"        # set a variable via environment variable (Linux)
 ```
 
+## Terraform Get
+```bash
+tf get      # install and update modules
+```
+
 ## Terraform Plan
 ```bash
 tf plan     # pre-deployment plan
@@ -118,7 +123,7 @@ tf destroy -target aws_instace.my_instance      # only destroy specific resource
 
 ## Terraform Taint
 ```bash
-tf taint aws_instance.myec2     # destroy and recreate the resource aws_instance.myec2
+tf taint aws_instance.myec2     # mark ec2 instance to destroy and recreate on next apply
 ```
 
 ## Terraform State
@@ -468,8 +473,6 @@ resource "aws_instance" "app-dev" {
 # retrieve the correct ami for the ap-southeast-1 region
 provider "aws" {
   region     = "ap-southeast-1"
-  access_key = "YOUR-ACCESS-KEY"
-  secret_key = "YOUR-SECRET-KEY"
 }
 
 data "aws_ami" "app_ami" {
