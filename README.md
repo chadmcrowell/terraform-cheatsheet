@@ -153,6 +153,8 @@ tf graph    # visual dependency graph
 tf import azurerm_storage.account.storage_account       # import the azure storage account specified in tf
 
 tf import aws_instance.myec2 i-041886ebb7e97bd20        # import ec2 instance with instance ID
+
+tf import module.vm.azurerm_linux_virtual_machine vm1   # import azure vm named "vm1" into module "vm"
 ```
 
 ## Terraform Output
@@ -475,7 +477,7 @@ provider "aws" {
   region     = "ap-southeast-1"
 }
 
-data "aws_ami" "app_ami" {
+data "aws_ami" "my_ami" {
   most_recent = true
   owners = ["amazon"]
 
@@ -487,7 +489,7 @@ data "aws_ami" "app_ami" {
 }
 
 resource "aws_instance" "instance-1" {
-    ami = data.aws_ami.app_ami.id
+    ami = data.aws_ami.my_ami.id
    instance_type = "t2.micro"
 }
 ```
