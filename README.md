@@ -128,6 +128,8 @@ tf taint aws_instance.myec2     # mark ec2 instance to destroy and recreate on n
 
 ## Terraform State
 ```bash
+tf show -json | jq     # output the state in json
+
 tf state show aws_eip.myeip    # inspect the state of an elastic ip resource
 
 tf state list   # list the resources in the state file
