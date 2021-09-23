@@ -161,6 +161,8 @@ tf import module.vm.azurerm_linux_virtual_machine vm1   # import azure vm named 
 
 ## Terraform Output
 ```bash
+tf output              # output the values within the output configuration
+
 tf output iam_arm       # output the value iam_arn specified within the output configuration
 ```
 
