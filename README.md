@@ -136,6 +136,8 @@ tf state list   # list the resources in the state file
 
 tf state refresh      # refresh the current state
 
+tf refresh # update the state to match .tf configs
+
 tf state mv aws_instance.my_webapp aws_instance.my_ec2      # move ec2 instance within state without destroying and recreating
 
 tf state pull     # manually download and output the remote state
