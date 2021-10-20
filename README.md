@@ -1,9 +1,9 @@
 # terraform-cheatsheet
 
-[command docs](https://www.terraform.io/docs/commands/)
-[functions](https://www.terraform.io/docs/configuration/functions/)
-[provisioners](https://www.terraform.io/docs/provisioners/index.html)
-[modules](https://registry.terraform.io/browse/modules)
+- [command docs](https://www.terraform.io/docs/commands/)
+- [functions](https://www.terraform.io/docs/configuration/functions/)
+- [provisioners](https://www.terraform.io/docs/provisioners/index.html)
+- [modules](https://registry.terraform.io/browse/modules)
 
 Version Number Arguments | Description  
 ------- | ----------------  
